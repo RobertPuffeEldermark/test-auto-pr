@@ -1,0 +1,19 @@
+name: Trigger Target Workflow
+
+on:
+    workflow_dispatch:
+        inputs:
+            SprintNumber:
+                description: 'Sprint Number'
+                required: true
+jobs:
+    trigger:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Trigger Target Workflow
+              uses: peter-evans/repository-dispatch@v1
+              with:
+                  token: ${{ secrets.REPO_TOKEN }}
+                  repository: RobertPuffeEldermark/test-auto-pr-2
+                  event-type: auto-merge-develop-to-main
+                  client-payload: '{"sprintNumber": "${{ github.event.inputs.SprintNumber }}"}'
