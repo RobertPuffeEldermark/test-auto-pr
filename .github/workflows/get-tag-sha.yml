@@ -5,19 +5,18 @@ on:
             tag:
                 description: 'The tag to get the SHA of'
                 required: true
+env:
+    POWERSHELL_REPO: 'RobertPuffeEldermark/PowerShell'
 jobs:
     get-tag-sha:
         runs-on: ubuntu-latest
         steps:
             - name: Get Tag SHA - Powershell
               run: |
-                  $REPO_NAME = "RobertPuffeEldermark/PowerShell"
-
-
-                  SHA=$(curl -L -X GET \
+                  POWERSHELL_SHA=$(curl -L -X GET \
                   -H "Accept: application/vnd.github+json" \
                   -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
                   -H "X-GitHub-Api-Version: 2022-11-28" \
-                  https://api.github.com/repos/${REPO_NAME}/git/ref/tags/${{ github.event.inputs.tag }})
+                  https://api.github.com/repos/${{ env.POWERSHELL_REPO }}/git/ref/tags/${{ github.event.inputs.tag }})
 
-                  echo "SHA: $SHA"
+                  echo "SHA: $POWERSHELL_SHA"
