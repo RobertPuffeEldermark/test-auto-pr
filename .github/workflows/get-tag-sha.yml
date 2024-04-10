@@ -12,6 +12,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Get Tag SHA - Powershell
+              id: powershell-get-tag-sha
               run: |
                   POWERSHELL_SHA=$(curl -L -X GET \
                   -H "Accept: application/vnd.github+json" \
@@ -20,4 +21,8 @@ jobs:
                   https://api.github.com/repos/${{ env.POWERSHELL_REPO }}/git/ref/tags/${{ github.event.inputs.tag }} \
                   | jq -r '.object.sha')
 
-                  echo "SHA: $POWERSHELL_SHA"
+                  echo "SHA=$POWERSHELL_SHA" >> $GITHUB_OUTPUT
+
+            - name: print output
+              run: |
+                  echo ${{ steps.powershell-get-tag-sha.outputs.SHA }}
