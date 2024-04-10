@@ -30,11 +30,6 @@ jobs:
             - name: print output
               run: |
                   echo ${{ steps.powershell-get-tag-sha.outputs.SHA }}
-    eldermark-get-tag-sha:
-        runs-on: ubuntu-latest
-        concurrency:
-            group: ${{ github.workflow }}-get-tag-sha
-        steps:
             - name: Get Tag SHA - eldermark
               id: eldermark-get-tag-sha
               run: |
@@ -49,12 +44,5 @@ jobs:
 
             - name: print output
               run: |
-                  echo ${{ steps.eldermark-get-tag-sha.outputs.SHA }}
-    print-all:
-        runs-on: ubuntu-latest
-        needs: [powershell-get-tag-sha, eldermark-get-tag-sha]
-        steps:
-            - name: print all
-              run: |
-                  echo "powershell SHA: ${{ needs.powershell-get-tag-sha.outputs.SHA }}"
-                  echo "eldermark SHA: ${{ needs.eldermark-get-tag-sha.outputs.SHA }}"
+                  echo "eldermark" ${{ steps.eldermark-get-tag-sha.outputs.SHA }}
+                  echo "powershell" ${{ steps.powershell-get-tag-sha.outputs.SHA }}
