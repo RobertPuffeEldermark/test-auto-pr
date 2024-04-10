@@ -17,6 +17,7 @@ jobs:
                   -H "Accept: application/vnd.github+json" \
                   -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
                   -H "X-GitHub-Api-Version: 2022-11-28" \
-                  https://api.github.com/repos/${{ env.POWERSHELL_REPO }}/git/ref/tags/${{ github.event.inputs.tag }})
+                  https://api.github.com/repos/${{ env.POWERSHELL_REPO }}/git/ref/tags/${{ github.event.inputs.tag }} \
+                  | jq -r '.object.sha')
 
                   echo "SHA: $POWERSHELL_SHA"
