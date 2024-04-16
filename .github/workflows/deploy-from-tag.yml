@@ -25,6 +25,7 @@ permissions:
 
 jobs:
     get-tag-sha:
+        environment: ${{ github.event.inputs.environment }}
         runs-on: ubuntu-latest
         concurrency:
             group: ${{ github.workflow }}-get-tag-sha
@@ -128,19 +129,11 @@ jobs:
                   echo "eldermark-emar-ui" ${{ steps.eldermark-emar-ui-get-tag-sha.outputs.SHA }}
 
             # Set credentials based on environment    
-            - name: Configure AWS Credentials - Sandbox
-              if: ${{ github.event.inputs.environment == 'sandbox' }}
+            - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                role-to-assume: ${{ secrets.AWS_ROLE_SANDBOX }}
-                aws-region: ${{ secrets.AWS_REGION_SANDBOX }}
-            - name: Configure AWS Credentials - Sandbox2
-              if: ${{ github.event.inputs.environment == 'sandbox2' }}
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                role-to-assume: ${{ secrets.AWS_ROLE_SANDBOX2 }}
-                aws-region: ${{ secrets.AWS_REGION_SANDBOX2 }}
-            
+                role-to-assume: ${{ secrets.AWS_ROLE}}
+                aws-region: ${{ secrets.AWS_REGION }}
             - name: Deploy to AWS
               run: |
                 set -e
