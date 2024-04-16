@@ -16,6 +16,9 @@ on:
 env:
   ELDERMARK_REPO: "LivTechCos/eldermark"
   ELDERMARK_VUE_REPO: "LivTechCos/eldermark-vue"
+  ELDERMARK_EMAR_REPO: "LivTechCos/eldermark-emar"
+  ELDERMARK_EMAR_DB_REPO: "LivTechCos/eldermark-emar-db"
+  ELDERMARK_EMAR_UI_REPO: "LivTechCos/eldermark-emar-ui"
 
 permissions:
   id-token: write
@@ -29,6 +32,7 @@ jobs:
             - name: Get Tag SHA - eldermark
               id: eldermark-get-tag-sha
               run: |
+                  set -e
                   SHA=$(curl -L -X GET \
                   -H "Accept: application/vnd.github+json" \
                   -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
@@ -36,11 +40,17 @@ jobs:
                   https://api.github.com/repos/${{ env.ELDERMARK_REPO }}/git/ref/tags/${{ github.event.inputs.tag }} \
                   | jq -r '.object.sha')
 
+                  if [ -z "$SHA" ]; then
+                  echo "Failed to get SHA for tag ${{ github.event.inputs.tag }}" >&2
+                  exit 1
+                  fi
+
                   echo "SHA=$SHA" >> $GITHUB_OUTPUT
 
             - name: Get Tag SHA - eldermark-vue
               id: eldermark-vue-get-tag-sha
               run: |
+                  set -e
                   SHA=$(curl -L -X GET \
                   -H "Accept: application/vnd.github+json" \
                   -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
@@ -48,17 +58,129 @@ jobs:
                   https://api.github.com/repos/${{ env.ELDERMARK_VUE_REPO }}/git/ref/tags/${{ github.event.inputs.tag }} \
                   | jq -r '.object.sha')
 
+                  if [ -z "$SHA" ]; then
+                  echo "Failed to get SHA for tag ${{ github.event.inputs.tag }}" >&2
+                  exit 1
+                  fi
+
                   echo "SHA=$SHA" >> $GITHUB_OUTPUT
+
+            - name: Get Tag SHA - eldermark-emar
+              id: eldermark-emar-get-tag-sha
+              run: |
+                  set -e
+                  SHA=$(curl -L -X GET \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  https://api.github.com/repos/${{ env.ELDERMARK_EMAR_REPO }}/git/ref/tags/${{ github.event.inputs.tag }} \
+                  | jq -r '.object.sha')
+
+                  if [ -z "$SHA" ]; then
+                  echo "Failed to get SHA for tag ${{ github.event.inputs.tag }}" >&2
+                  exit 1
+                  fi
+
+                  echo "SHA=$SHA" >> $GITHUB_OUTPUT
+
+            - name: Get Tag SHA - eldermark-emar-db
+              id: eldermark-emar-db-get-tag-sha
+              run: |
+                  set -e
+                  SHA=$(curl -L -X GET \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  https://api.github.com/repos/${{ env.ELDERMARK_EMAR_DB_REPO }}/git/ref/tags/${{ github.event.inputs.tag }} \
+                  | jq -r '.object.sha')
+
+                  if [ -z "$SHA" ]; then
+                  echo "Failed to get SHA for tag ${{ github.event.inputs.tag }}" >&2
+                  exit 1
+                  fi
+
+                  echo "SHA=$SHA" >> $GITHUB_OUTPUT
+            
+            - name: Get Tag SHA - eldermark-emar-ui
+              id: eldermark-emar-ui-get-tag-sha
+              run: |
+                  set -e
+                  SHA=$(curl -L -X GET \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  https://api.github.com/repos/${{ env.ELDERMARK_EMAR_UI_REPO }}/git/ref/tags/${{ github.event.inputs.tag }} \
+                  | jq -r '.object.sha')
+
+                  if [ -z "$SHA" ]; then
+                  echo "Failed to get SHA for tag ${{ github.event.inputs.tag }}" >&2
+                  exit 1
+                  fi
+
+                  echo "SHA=$SHA" >> $GITHUB_OUTPUT
+
             - name: print output
               run: |
                   echo "eldermark" ${{ steps.eldermark-get-tag-sha.outputs.SHA }}
                   echo "eldermark-vue" ${{ steps.eldermark-vue-get-tag-sha.outputs.SHA }}
-            - name: Configure AWS Credentials
+                  echo "eldermark-emar" ${{ steps.eldermark-emar-get-tag-sha.outputs.SHA }}
+                  echo "eldermark-emar-db" ${{ steps.eldermark-emar-db-get-tag-sha.outputs.SHA }}
+                  echo "eldermark-emar-ui" ${{ steps.eldermark-emar-ui-get-tag-sha.outputs.SHA }}
+
+            # Set credentials based on environment    
+            - name: Configure AWS Credentials - Sandbox
+              if: ${{ github.event.inputs.environment == 'sandbox' }}
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                role-to-assume: ${{ secrets.AWS_ROLE }}
-                aws-region: ${{ secrets.AWS_REGION }}
+                role-to-assume: ${{ secrets.AWS_ROLE_SANDBOX }}
+                aws-region: ${{ secrets.AWS_REGION_SANDBOX }}
+            - name: Configure AWS Credentials - Sandbox2
+              if: ${{ github.event.inputs.environment == 'sandbox2' }}
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ secrets.AWS_ROLE_SANDBOX2 }}
+                aws-region: ${{ secrets.AWS_REGION_SANDBOX2 }}
+            
             - name: Deploy to AWS
               run: |
-                echo "Triggering CodePipeline for Eldermark"
-                aws codepipeline start-pipeline-execution --name Deploy-Clinical-Sandbox --source-revisions actionName=Source,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-get-tag-sha.outputs.SHA }} actionName=vue,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-vue-get-tag-sha.outputs.SHA }} --region us-east-2                
+                set -e
+                echo "Triggering CodePipeline for ${{ github.event.inputs.environment }} environment"
+                CLINICAL_PIPELINE_NAME=$(aws ssm get-parameter --name /eldermark/${{ github.event.inputs.environment }}/pipeline/clinical --query Parameter.Value --output text)
+                if [ -z "$CLINICAL_PIPELINE_NAME" ]; then
+                  echo "Failed to get pipeline name for Clinical" >&2
+                  exit 1
+                fi
+
+                EMAR_PIPELINE_NAME=$(aws ssm get-parameter --name /eldermark/${{ github.event.inputs.environment }}/pipeline/emar --query Parameter.Value --output text)
+                if [ -z "$EMAR_PIPELINE_NAME" ]; then
+                  echo "Failed to get pipeline name for EMAR" >&2
+                  exit 1
+                fi
+                
+                echo "Triggering CodePipeline for Clinical"
+                DEPLOY_OUTPUT_CLINICAL=$(aws codepipeline start-pipeline-execution --name $CLINICAL_PIPELINE_NAME \
+                --source-revisions \
+                actionName=Eldermark-Api,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-get-tag-sha.outputs.SHA }} \
+                actionName=Eldermark-Vue,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-vue-get-tag-sha.outputs.SHA }} \
+                --region us-east-2)
+
+                if [ -z "$DEPLOY_OUTPUT_CLINICAL" ]; then
+                  echo "Failed to trigger CodePipeline for Eldermark" >&2
+                  exit 1
+                fi
+                echo " CodePipeline run id is $DEPLOY_OUTPUT_CLINICAL"
+                
+                echo "Triggering CodePipeline for EMAR"
+                DEPLOY_OUTPUT_EMAR=$(
+                  aws codepipeline start-pipeline-execution --name $EMAR_PIPELINE_NAME \
+                  --source-revisions \
+                  actionName=Source-EMAR,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-emar-get-tag-sha.outputs.SHA }} \
+                  actionName=Source-EMAR-DB,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-emar-db-get-tag-sha.outputs.SHA }} \
+                  actionName=Source-EMAR-UI,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-emar-ui-get-tag-sha.outputs.SHA }} \
+                  --region us-east-2)
+                
+                if [ -z "$DEPLOY_OUTPUT_EMAR" ]; then
+                  echo "Failed to trigger CodePipeline for Eldermark" >&2
+                  exit 1
+                fi
+                echo " CodePipeline run id is $DEPLOY_OUTPUT_EMAR"
