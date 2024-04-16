@@ -127,6 +127,9 @@ jobs:
                   echo "eldermark-emar" ${{ steps.eldermark-emar-get-tag-sha.outputs.SHA }}
                   echo "eldermark-emar-db" ${{ steps.eldermark-emar-db-get-tag-sha.outputs.SHA }}
                   echo "eldermark-emar-ui" ${{ steps.eldermark-emar-ui-get-tag-sha.outputs.SHA }}
+                  echo "for testing purposes only"
+                  echo " secret aws role is ${{ secrets.AWS_ROLE }}"
+                  echo " secret aws region is ${{ secrets.AWS_REGION }}"
 
             # Set credentials based on environment    
             - name: Configure AWS Credentials
@@ -137,9 +140,6 @@ jobs:
             - name: Deploy to AWS
               run: |
                 set -e
-                echo "for testing purposes only"
-                echo " secret aws role is ${{ secrets.AWS_ROLE }}"
-                echo " secret aws region is ${{ secrets.AWS_REGION }}"
                 echo "Triggering CodePipeline for ${{ github.event.inputs.environment }} environment"
                 CLINICAL_PIPELINE_NAME=$(aws ssm get-parameter --name /eldermark/${{ github.event.inputs.environment }}/pipeline/clinical --query Parameter.Value --output text)
                 if [ -z "$CLINICAL_PIPELINE_NAME" ]; then
