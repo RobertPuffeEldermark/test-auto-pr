@@ -21,7 +21,7 @@ env:
   ELDERMARK_EMAR_UI_REPO: "LivTechCos/eldermark-emar-ui"
 
 permissions:
-  id-token: write
+  id-token: write 
 
 jobs:
     get-tag-sha:
@@ -133,8 +133,8 @@ jobs:
               uses: aws-actions/configure-aws-credentials@v4
               with:
                 audience: sts.amazonaws.com
-                role-to-assume: arn:aws:iam::134159085505:role/GitHubActionsRole
-                aws-region: us-east-2
+                role-to-assume: ${{ secrets.AWS_ROLE }}
+                aws-region: ${{ secrets.AWS_REGION }}
             - name: Deploy to AWS
               run: |
                 set -e
@@ -156,7 +156,7 @@ jobs:
                 --source-revisions \
                 actionName=Eldermark-Api,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-get-tag-sha.outputs.SHA }} \
                 actionName=Eldermark-Vue,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-vue-get-tag-sha.outputs.SHA }} \
-                --region us-east-2)
+                --region ${{ secrets.AWS_REGION }})
 
                 if [ -z "$DEPLOY_OUTPUT_CLINICAL" ]; then
                   echo "Failed to trigger CodePipeline for Eldermark" >&2
@@ -171,7 +171,7 @@ jobs:
                   actionName=Source-EMAR,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-emar-get-tag-sha.outputs.SHA }} \
                   actionName=Source-EMAR-DB,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-emar-db-get-tag-sha.outputs.SHA }} \
                   actionName=Source-EMAR-UI,revisionType=COMMIT_ID,revisionValue=${{ steps.eldermark-emar-ui-get-tag-sha.outputs.SHA }} \
-                  --region us-east-2)
+                  --region ${{ secrets.AWS_REGION }})
                 
                 if [ -z "$DEPLOY_OUTPUT_EMAR" ]; then
                   echo "Failed to trigger CodePipeline for Eldermark" >&2
