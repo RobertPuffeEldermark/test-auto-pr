@@ -132,11 +132,14 @@ jobs:
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
-                role-to-assume: ${{ secrets.AWS_ROLE}}
+                role-to-assume: ${{ secrets.AWS_ROLE }}
                 aws-region: ${{ secrets.AWS_REGION }}
             - name: Deploy to AWS
               run: |
                 set -e
+                echo "for testing purposes only"
+                echo " secret aws role is ${{ secrets.AWS_ROLE }}"
+                echo " secret aws region is ${{ secrets.AWS_REGION }}"
                 echo "Triggering CodePipeline for ${{ github.event.inputs.environment }} environment"
                 CLINICAL_PIPELINE_NAME=$(aws ssm get-parameter --name /eldermark/${{ github.event.inputs.environment }}/pipeline/clinical --query Parameter.Value --output text)
                 if [ -z "$CLINICAL_PIPELINE_NAME" ]; then
