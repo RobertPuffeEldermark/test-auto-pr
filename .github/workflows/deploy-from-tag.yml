@@ -127,17 +127,14 @@ jobs:
                   echo "eldermark-emar" ${{ steps.eldermark-emar-get-tag-sha.outputs.SHA }}
                   echo "eldermark-emar-db" ${{ steps.eldermark-emar-db-get-tag-sha.outputs.SHA }}
                   echo "eldermark-emar-ui" ${{ steps.eldermark-emar-ui-get-tag-sha.outputs.SHA }}
-                  echo "for testing purposes only"
-                  echo " secret aws role is ${{ secrets.AWS_ROLE }}"
-                  echo " secret aws region is ${{ secrets.AWS_REGION }}"
 
             # Set credentials based on environment    
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
                 audience: sts.amazonaws.com
-                role-to-assume: ${{ secrets.AWS_ROLE }}
-                aws-region: ${{ secrets.AWS_REGION }}
+                role-to-assume: arn:aws:iam::134159085505:role/GitHubActionsRole
+                aws-region: us-east-2
             - name: Deploy to AWS
               run: |
                 set -e
