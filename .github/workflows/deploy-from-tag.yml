@@ -139,13 +139,13 @@ jobs:
               run: |
                 set -e
                 echo "Triggering CodePipeline for ${{ github.event.inputs.environment }} environment"
-                CLINICAL_PIPELINE_NAME=$(aws ssm get-parameter --name /eldermark/${{ github.event.inputs.environment }}/pipeline/clinical --query Parameter.Value --output text)
+                CLINICAL_PIPELINE_NAME=$(aws ssm get-parameter --name /next/${{ github.event.inputs.environment }}/pipeline/clinical --query Parameter.Value --output text)
                 if [ -z "$CLINICAL_PIPELINE_NAME" ]; then
                   echo "Failed to get pipeline name for Clinical" >&2
                   exit 1
                 fi
 
-                EMAR_PIPELINE_NAME=$(aws ssm get-parameter --name /eldermark/${{ github.event.inputs.environment }}/pipeline/emar --query Parameter.Value --output text)
+                EMAR_PIPELINE_NAME=$(aws ssm get-parameter --name /next/${{ github.event.inputs.environment }}/pipeline/emar --query Parameter.Value --output text)
                 if [ -z "$EMAR_PIPELINE_NAME" ]; then
                   echo "Failed to get pipeline name for EMAR" >&2
                   exit 1
