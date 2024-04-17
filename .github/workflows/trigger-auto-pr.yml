@@ -6,7 +6,7 @@ on:
       target_workflow:
         description: 'The name of the workflow to trigger'
         required: true
-        default: 'create-pull-request'
+        default: 'auto-pull-request'
       branch_name:
         description: 'Merge branch name'
         type: string
