@@ -38,7 +38,7 @@ jobs:
         - name: get body markdown file
           id: get-body
           run: |
-            cat ${{ github.event.inputs.ReleaseInfoFile }} >> $GITHUB_OUTPUT
+            echo "RELEASE_BODY=$(cat ${{ github.event.inputs.ReleaseInfoFile }})" >> $GITHUB_OUTPUT
 
         # Trigger Repository 1
         - name: Trigger Target Workflow - Powershell
@@ -48,7 +48,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.REPO_TOKEN_RP }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/RobertPuffeEldermark/PowerShell/actions/workflows/${{ github.event.inputs.target_workflow }}/dispatches \
-            -d '{"ref":"main","inputs":{"ReleaseBody":"${{ steps.get-body.outputs.body }}","ReleaseName":"${{ github.event.inputs.ReleaseName }}","IncludePipelineMicroservices":"${{ github.event.inputs.IncludePipelineMicroservices }}"}}'
+            -d '{"ref":"main","inputs":{"ReleaseBody":"${{ steps.get-body.outputs }}","ReleaseName":"${{ github.event.inputs.ReleaseName }}","IncludePipelineMicroservices":"${{ github.event.inputs.IncludePipelineMicroservices }}"}}'
         # Repeat the above step for each repository
 
     # ToDo: validate tag was created in all repositories
