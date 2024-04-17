@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       target_workflow:
-        description: 'The name of the workflow to trigger'
+        description: 'The filename of the workflow to trigger'
         required: true
-        default: 'auto-pull-request'
+        default: 'autopullrequest.yml'
       branch_name:
         description: 'Merge branch name'
         type: string
