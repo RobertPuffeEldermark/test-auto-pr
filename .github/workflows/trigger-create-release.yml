@@ -6,7 +6,7 @@ on:
         target_workflow:
             description: 'The name of the workflow to trigger'
             required: true
-            default: 'tag-create-release'
+            default: 'create-release'
         DeploymentInstructions:
             description: 'Deployment Instructions'
             required: false
