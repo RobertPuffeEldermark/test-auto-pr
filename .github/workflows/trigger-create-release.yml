@@ -6,11 +6,20 @@ on:
         target_workflow:
             description: 'The name of the workflow to trigger'
             required: true
-            default: 'create-release'
+            default: 'tag-create-release'
+        ReleaseName:
+            description: 'Name of release. ex. Sprint 6 Close'
+            type: string
+            required: true
         DeploymentInstructions:
             description: 'Deployment Instructions'
             required: false
-            default: 'Include EMAR-582 script that must be run against each community database. [https://eldermark.atlassian.net/browse/EMAR-582](https://eldermark.atlassian.net/browse/EMAR-582)'
+            type: string
+            default: 'Include tickets if possible [https://eldermark.atlassian.net/browse/EMAR-582](https://eldermark.atlassian.net/browse/EMAR-582)'
+        IncludePipelineMicroservices:
+            description: 'Include default list of clinical microservices'
+            type: string
+            default: '          ### Microservices deployed:\n            \n          **Clinical Pipeline**\n          \n          - api-gateway\n          - assessment\n          - audit\n          - billing\n          - crm\n          - emar-sync\n          - eureka\n          - event\n          - housing\n          - mirth-service\n          - notification\n          - org\n          - resident\n          - rm\n          - web\n          \n          **EMAR Pipeline**\n          \n          - emar-cluster\n          - emar-data-api\n'
 
 jobs:
     # ToDo: use github api to get tags from each repository and calculate new tag. 
@@ -28,3 +37,6 @@ jobs:
             https://api.github.com/repos/RobertPuffeEldermark/PowerShell/actions/workflows/${{ github.event.inputs.target_workflow }}/dispatches \
             -d '{"ref":"main","inputs":{"DeploymentInstructions":"${{ github.event.inputs.DeploymentInstructions }}"}}'
         # Repeat the above step for each repository
+
+    # ToDo: validate tag was created in all repositories
+    
