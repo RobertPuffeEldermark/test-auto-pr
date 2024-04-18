@@ -6,7 +6,7 @@ on:
       target_workflow:
         description: 'The filename of the workflow to trigger'
         required: true
-        default: 'autopullrequest.yml'
+        default: 'autopullrequest_local.yml'
       branch_name:
         description: 'Merge branch name'
         type: string
@@ -40,6 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Trigger Repository 1
+      - name: Append Branch Name
+        id: append-branch-name
+        run: |
+          RUN_ID_SUFFIX=${{ github.run_id }}
+          RUN_ID_SUFFIX=${RUN_ID_SUFFIX:0:5}
+          echo "branch_name=${{ github.event.inputs.branch_name }}-$RUN_ID_SUFFIX" >> $GITHUB_OUTPUT
+          echo "branch name is $branch_name"
       - name: Trigger Target Workflow - Powershell
         run: |          
           REPO=("RobertPuffeEldermark/PowerShell" "RobertPuffeEldermark/test-auto-pr-2")
@@ -50,5 +57,5 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.REPO_TOKEN_RP }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/$REPO/actions/workflows/${{ github.event.inputs.target_workflow }}/dispatches \
-            -d '{"ref":"main","inputs":{"branch_name":"${{ github.event.inputs.branch_name }}","pr_type":"${{ github.event.inputs.pr_type }}","pr_description":"${{ github.event.inputs.pr_description }}","source_branch":"${{ github.event.inputs.source_branch }}","target_branch":"${{ github.event.inputs.target_branch }}"}}'
+            -d '{"ref":"main","inputs":{"branch_name":"${{ steps.append-branch-name.outputs.branch_name }}","pr_type":"${{ github.event.inputs.pr_type }}","pr_description":"${{ github.event.inputs.pr_description }}","source_branch":"${{ github.event.inputs.source_branch }}","target_branch":"${{ github.event.inputs.target_branch }}"}}'
           done
