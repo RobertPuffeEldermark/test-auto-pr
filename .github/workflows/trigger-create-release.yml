@@ -13,7 +13,7 @@ on:
             required: true
             default: 'releases/ReleaseInfo.md'
         ReleaseName:
-            description: 'Name of release. ex. Sprint 6 Close'
+            description: 'Name of release. ex. Eldermark Next'
             type: string
             default: 'Eldermark Next'
             required: true
@@ -87,7 +87,7 @@ jobs:
                     "inputs":{
                         "Tag":"${{ steps.new-tag.outputs.tag }}",
                         "ReleaseBody":"${{ inputs.ReleaseInfoFile }}",
-                        "ReleaseName":"${{ github.event.inputs.ReleaseName }} ${{ steps.new-tag.outputs.tag }}",
+                        "ReleaseName":"${{ github.event.inputs.ReleaseName }} ${{ steps.new-tag.outputs.tag }}"
                     }
                 }'
             done
