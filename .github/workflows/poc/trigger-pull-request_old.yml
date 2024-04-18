@@ -34,9 +34,7 @@ on:
         type: string
         required: true
         default: 'main'
-env:
-  REPOSITORIES: "RobertPuffeEldermark/PowerShell RobertPuffeEldermark/test-auto-pr-2"
-  TARGET_WORKFLOW: "create-pull-request.yml"
+
 jobs:
   trigger:
     runs-on: ubuntu-latest
@@ -51,15 +49,15 @@ jobs:
 
       - name: Trigger Target Workflow - Powershell
         run: |          
-          IFS=' ' read -r -a REPO_ARRAY <<< "${{ env.REPOSITORIES }}"
+          REPO=("RobertPuffeEldermark/PowerShell" "RobertPuffeEldermark/test-auto-pr-2")
           echo "branch name is ${{ steps.append-branch-name.outputs.branch_name }}"
-          for REPO in "${REPO_ARRAY[@]}" ; do
+          for REPO in "${REPO[@]}" ; do
             echo "Triggering workflow for $REPO"
             curl -L -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.REPO_TOKEN_RP }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/$REPO/actions/workflows/${{ env.TARGET_WORKFLOW}}/dispatches \
+            https://api.github.com/repos/$REPO/actions/workflows/create-pull-request.yml/dispatches \
             -d '{
               "ref":"main",
               "inputs":{
