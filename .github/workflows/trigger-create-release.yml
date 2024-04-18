@@ -19,6 +19,7 @@ on:
 
 jobs:
     # ToDo: Add check if release info file exists
+    # ToDo: create one array for both steps
     # ToDo: Add concurrency
     trigger-create-release:
         runs-on: ubuntu-latest
@@ -31,7 +32,6 @@ jobs:
           run: |
             echo "fetching tags"
             
-            # ToDo: change array to apply to multiple steps. 
             REPOSITORIES=("RobertPuffeEldermark/PowerShell" "RobertPuffeEldermark/test-auto-pr-2")
             GREATEST_TAG=0000.00.00.0000
             for REPO in "${REPOSITORIES[@]}" ; do
@@ -62,10 +62,9 @@ jobs:
             echo "tag=${{ steps.get-date.outputs.date }}.$NEW_NUMBER" >> $GITHUB_OUTPUT
             fi
 
-        # Trigger Repository 1
+        # Trigger Repositories
         - name: Trigger Target Workflow - Powershell
           run: |    
-            # ToDo: change array to apply to multiple steps. 
             REPO=("RobertPuffeEldermark/PowerShell" "RobertPuffeEldermark/test-auto-pr-2")
             for REPO in "${REPO[@]}" ; do
                 echo "Triggering workflow for $REPO"   
