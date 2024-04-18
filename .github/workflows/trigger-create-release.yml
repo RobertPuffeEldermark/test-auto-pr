@@ -20,7 +20,7 @@ on:
 env:
     REPOSITORIES: "RobertPuffeEldermark/PowerShell RobertPuffeEldermark/test-auto-pr-2"
 jobs:
-    # ToDo: Add concurrency
+    # ToDo: check for success of api call
     trigger-create-release:
         runs-on: ubuntu-latest
         steps:
@@ -30,7 +30,7 @@ jobs:
         - name: check if release info file exists
           run: |
             if [ ! -f "${{ inputs.ReleaseInfoFile }}" ]; then
-                echo "Release Info File not found"
+                echo "::error::Release Info File not found"
                 exit 1
             fi
 
