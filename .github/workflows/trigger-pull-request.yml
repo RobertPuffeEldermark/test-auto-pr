@@ -1,17 +1,13 @@
-name: Trigger Create PR
+name: trigger-pull-request
 
 on:
   workflow_dispatch:
     inputs:
-      target_workflow:
-        description: 'The filename of the workflow to trigger'
-        required: true
-        default: 'autopullrequest_local.yml'
       branch_name:
         description: 'Merge branch name'
         type: string
         required: true
-        default: 'Sprint-1-merge'
+        default: 'Sprint-1'
       pr_type:
         description: 'Type of pull request'
         type: choice
@@ -19,23 +15,22 @@ on:
         options:
           - 'Sprint-Close'
           - 'Patch'
-      pr_title:
-        description: 'Title of the pull request'
+          - 'Hotfix'
+      pr_title_append:
+        description: 'Title - Append to title of the pull request'
         type: string
-        required: true
-        default: 'Update report'
+        required: false
       pr_body:
-        description: 'Body of the pull reques'
+        description: 'Body of the pull request - add additional details here'
         type: string
-        required: true
-        default: 'This is an automated pull request'
+        required: false
       source_branch:
-        description: 'Branch to create pull request from'
+        description: 'Branch to create pull request from - default is develop'
         type: string
         required: true
         default: 'develop'
       target_branch:
-        description: 'Branch to create pull request to'
+        description: 'Branch to create pull request to - default is main'
         type: string
         required: true
         default: 'main'
@@ -50,7 +45,7 @@ jobs:
         run: |
           RUN_ID_SUFFIX=${{ github.run_id }}
           RUN_ID_SUFFIX=${RUN_ID_SUFFIX:0:5}
-          echo "branch_name=${{ github.event.inputs.branch_name }}-$RUN_ID_SUFFIX" >> $GITHUB_OUTPUT
+          echo "branch_name=${{ github.event.inputs.branch_name }}-${{ github.event.inputs.pr_type }}-$RUN_ID_SUFFIX" >> $GITHUB_OUTPUT
 
       - name: Trigger Target Workflow - Powershell
         run: |          
@@ -62,14 +57,14 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.REPO_TOKEN_RP }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/$REPO/actions/workflows/${{ github.event.inputs.target_workflow }}/dispatches \
+            https://api.github.com/repos/$REPO/actions/workflows/create-pull-request.yml/dispatches \
             -d '{
               "ref":"main",
               "inputs":{
                 "branch_name":"${{ steps.append-branch-name.outputs.branch_name }}",
                 "pr_type":"${{ github.event.inputs.pr_type }}",
-                "pr_title":"${{ github.event.inputs.pr_title }}",
-                "pr_body":"${{ github.event.inputs.pr_body }}",
+                "pr_title":"${{github.event.inputs.branch_name}}-${{ github.event.inputs.pr_type }} ${{ github.event.inputs.pr_title_append }}",
+                "pr_body":"${{ github.event.inputs.pr_body }} This is an automated pull request.",
                 "source_branch":"${{ github.event.inputs.source_branch }}",
                 "target_branch":"${{ github.event.inputs.target_branch }}"
               }
