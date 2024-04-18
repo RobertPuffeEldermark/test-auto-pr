@@ -41,12 +41,7 @@ jobs:
                 https://api.github.com/repos/$REPO/git/refs/tags \
                 | jq -r '.[] | select(.ref | contains("${{ steps.get-date.outputs.date }}")) | .ref' | cut -d '/' -f 3)
                 echo "Tag for $REPO is $TAG"
-                if [[ -z "$TAG" ]]; then
-                    echo "No tag found for $REPO Setting to 0000.00.00.0000"
-                    TAG=0000.00.00.0000
-                    continue
-                fi
-                echo "TAG_$REPO=$TAG" >> $GITHUB_OUTPUT
+                # Check if tag is greater than GREATEST_TAG
                 if [[ $TAG > $GREATEST_TAG ]]; then
                     GREATEST_TAG=$TAG
                     echo "GREATEST_TAG=$GREATEST_TAG" >> $GITHUB_OUTPUT
