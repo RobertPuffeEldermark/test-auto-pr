@@ -7,34 +7,43 @@ on:
             description: 'The filename of the workflow to trigger'
             required: true
             default: 'createrelase_local.yml'
-        ReleaseName:
-            description: 'Name of release. ex. Sprint 6 Close'
-            type: string
-            required: true
         ReleaseInfoFile:
             description: 'Release Info File'
             type: string
             required: true
             default: 'releases/ReleaseInfo.md'
-
+        ReleaseName:
+            description: 'Name of release. ex. Sprint 6 Close'
+            type: string
+            default: 'Eldermark Next'
+            required: true
+env:
+    REPOSITORIES: "RobertPuffeEldermark/PowerShell RobertPuffeEldermark/test-auto-pr-2"
 jobs:
-    # ToDo: Add check if release info file exists
-    # ToDo: create one array for both steps
     # ToDo: Add concurrency
     trigger-create-release:
         runs-on: ubuntu-latest
         steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: check if release info file exists
+          run: |
+            if [ ! -f "${{ inputs.ReleaseInfoFile }}" ]; then
+                echo "Release Info File not found"
+                exit 1
+            fi
+
         - name: Get the date
           id: get-date
           run: echo "date=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+
         - name: fetch tags on repos
           id: fetch-tags
           run: |
-            echo "fetching tags"
-            
-            REPOSITORIES=("RobertPuffeEldermark/PowerShell" "RobertPuffeEldermark/test-auto-pr-2")
             GREATEST_TAG=0000.00.00.0000
-            for REPO in "${REPOSITORIES[@]}" ; do
+            IFS=' ' read -r -a REPO_ARRAY <<< "${{ env.REPOSITORIES }}"
+            for REPO in "${REPO_ARRAY[@]}" ; do
                 TAG=$(curl -L -X GET \
                 -H "Accept: application/vnd.github+json" \
                 -H "Authorization: Bearer ${{ secrets.REPO_TOKEN }}" \
@@ -65,8 +74,8 @@ jobs:
         # Trigger Repositories
         - name: Trigger Target Workflow - Powershell
           run: |    
-            REPO=("RobertPuffeEldermark/PowerShell" "RobertPuffeEldermark/test-auto-pr-2")
-            for REPO in "${REPO[@]}" ; do
+            IFS=' ' read -r -a REPO_ARRAY <<< "${{ env.REPOSITORIES }}"
+            for REPO in "${REPO_ARRAY[@]}" ; do
                 echo "Triggering workflow for $REPO"   
                 curl -L -X POST \
                 -H "Accept: application/vnd.github+json" \
@@ -78,7 +87,7 @@ jobs:
                     "inputs":{
                         "Tag":"${{ steps.new-tag.outputs.tag }}",
                         "ReleaseBody":"${{ inputs.ReleaseInfoFile }}",
-                        "ReleaseName":"${{ github.event.inputs.ReleaseName }}"
+                        "ReleaseName":"${{ github.event.inputs.ReleaseName }} ${{ steps.new-tag.outputs.tag }}",
                     }
                 }'
             done
