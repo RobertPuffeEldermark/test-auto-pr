@@ -1,0 +1,50 @@
+name: create release branches
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "The tag to deploy"
+        required: true
+      source_branch:
+        description: "The source branch to create the release branch from"
+        required: true
+env:
+  # ELDERMARK_REPO: "LivTechCos/eldermark"
+  # ELDERMARK_VUE_REPO: "LivTechCos/eldermark-vue"
+  # ELDERMARK_EMAR_REPO: "LivTechCos/eldermark-emar"
+  # ELDERMARK_EMAR_DB_REPO: "LivTechCos/eldermark-emar-db"
+  # ELDERMARK_EMAR_UI_REPO: "LivTechCos/eldermark-emar-ui"
+  # INFRA_REPO: "LivTechCos/eldermark-infrastructure"
+  # REPOSITORIES: "LivTechCos/eldermark LivTechCos/eldermark-vue LivTechCos/eldermark-emar LivTechCos/eldermark-emar-db LivTechCos/eldermark-emar-ui"
+  REPOSITORIES: "RobertPuffeEldermark/Powershell RobertPuffeEldermark/test-auto-pr-2"
+
+
+permissions:
+  id-token: write 
+
+jobs:
+  # Calculate the branch name from the tag
+  # get-branch-name:
+
+  # Create a new branch in each repository in the REPOSITORIES list, named after the branch_name input
+  create-release-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release Branch - eldermark
+        id: eldermark-create-release-branch
+        run: |
+          set -e
+          IFS=' ' read -r -a REPO_ARRAY <<< "${{ env.REPOSITORIES }}"
+            for REPO in "${REPO_ARRAY[@]}" ; do
+              REPO_NAME=$(echo $REPO | cut -d'/' -f2)
+              BRANCH_NAME=$(echo ${{ github.event.inputs.branch_name }} | sed 's/\./-/g')
+              SOURCE_BRANCH=$(echo ${{ github.event.inputs.source_branch }} | sed 's/\./-/g')
+              echo "Creating branch $BRANCH_NAME from $SOURCE_BRANCH in $REPO_NAME"
+              curl -L -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.REPO_TOKEN_RP }}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -d "{\"ref\":\"refs/heads/$BRANCH_NAME\",\"sha\":\"$SOURCE_BRANCH\"}" \
+              https://api.github.com/repos/$REPO/git/refs
+            done
+
